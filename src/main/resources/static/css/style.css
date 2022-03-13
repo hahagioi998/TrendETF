@@ -1,0 +1,55 @@
+img {
+    display: block;
+    max-width: 100%;
+}
+p {
+    font-size: 15px;
+    line-height:25px;
+    text-align: justify;
+}
+#param td {
+    height: 50px;
+    vertical-align: middle;
+}
+#param table td{
+    border: none;
+}
+
+#label {
+    margin-bottom: 10px;
+}
+.trade-title {
+    text-align: center;
+    font-size: large;
+    font-weight: bold;
+    padding-top: 10px;
+}
+.chart-title {
+    font-size: large;
+    margin-bottom: none;
+}
+.list-trade {
+    background: rgba(0,0,0,.05);
+}
+.footer {
+    text-align: center;
+    margin-bottom:20px;
+    font-style: italic;
+    font-size: medium;
+}
+#tradeRecords td, #tradeRecords th {
+    text-align: center;
+}
+h2 {
+    margin-top: 0px;
+}
+hr {
+    margin-top: 0px;
+}
+body {
+    background-color: #F6F6F6;
+    background-image: url("../img/test.jpg");
+}
+.container {
+    background-color: white;
+}

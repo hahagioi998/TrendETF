@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatibale" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>趋势交易ETF回测系统</title>
+    <link  rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.css}"/>
+    <link  rel="stylesheet" th:href="@{/css/style.css}"/>
+    <!--日期选择插件-->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-datepicker/bootstrap-datepicker3.min.css}">
+    <!-- echarts.js -->
+    <script th:src="@{/js/echarts.js}"></script>
+    <!-- axios.js -->
+    <script th:src="@{/js/axios.js}"></script>
+    <!-- vue.js -->
+    <script th:src="@{/js/vue.js}"></script>
+    <!-- jQuery及bootstrap.js -->
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
+    <!--日期选择插件-->
+    <script th:src="@{/js/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/js/bootstrap-datepicker/bootstrap-datepicker.zh-CN.min.js}"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <nav class="navbar navbar-default navbar-inverse" role="navigation">
+                    <div class="navbar-header">
+                         <a class="navbar-brand" href="#">趋势交易ETF回测系统</a>
+                    </div>
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav">
+                            <li>
+                                 <a th:href="@{/trend/}">数据回测</a>
+                            </li>
+                            <li class="active">
+                                 <a href="#">帮助文档</a>
+                            </li>
+                        </ul>
+
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                 <a href="#">备注:这是一个demo项目</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <h1 style="margin-top: 5px">
+                    帮助文档 <small>趋势交易系统及其使用说明</small>
+                </h1>
+                <p>
+                    趋势交易是一种简单而实用的交易策略，它是一种右侧交易策略，也是传统意义上的“追涨杀跌”，在证券交易领域得到了广泛的运用。
+                </p>
+                <p>
+                    趋势交易策略以均线为主要的参考指标，当上涨突破均线时，认为上涨趋势形成，产生买入信号；下跌超出预设的回撤时，认为下跌趋势来临，产生卖出信号，及时止损。
+                </p>
+                <p>
+                    趋势交易当然不仅仅限于均线指标。本系统是基于最简单的均线指标，对趋势交易系统做一个简单的模拟。
+                </p>
+            </div>
+        </div>
+        <hr/>
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <h2>
+                    系统模块
+                </h2>
+                <p>
+                    <strong>趋势交易/指数收益对比分析图</strong>：直观展示趋势交易和指数之间的关系。
+                </p>
+                <p>
+                    <strong>回测参数</strong>：决定趋势交易买卖点位的主要参数。
+                </p>
+                <p>
+                    <strong>收益一览</strong>：分析策略回测期间的收益金额和收益率。
+                </p>
+                <p>
+                    <strong>盈亏统计</strong>：记录所有交易中的盈利、亏损次数及比率。
+                </p>
+                <p>
+                    <strong>收益对比</strong>：对比各年份指数收益率与趋势投资收益率。
+                </p>
+                <p>
+                    <strong>交易明细</strong>：展示策略运行期间的所有交易记录，含买卖日期，点位及盈亏比率。
+                </p>
+            </div>
+       </div>
+        <hr/>
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <h2>
+                    回测参数
+                </h2>
+                <p>
+                    <strong>指数ETF</strong>：指数基金，即交易标的。数据库中有红利指数，上证50，沪深300，中证环保，中证500，全指医药，全指金融，创业板指，养老产业，中证传媒，证券公司共计11个指数数据可供回测。
+                </p>
+                <p>
+                    <strong>MA均线</strong>：MA，即Moving Average移动平均线，用统计分析的方法，将一定时期内的证券指数求平均值。是当今应用最普遍的技术指标之一，可帮助交易者确认现有趋势、判断将出现的趋势。一般，当ETF价格上涨，高于其MA，则产生购买信号。当证券价格下跌，低于其MA，则产生出售信号。系统提供5日线、10日线、20日线，30日线和60日线的指标，供回测。
+                </p>
+                <p>
+                    <strong>购买阈值</strong>：当ETF指数上涨，高于其MA，则产生购买信号，购买阈值即超出其MA的比率，如购买阈值为1.05时，表示指数点位超出MA均线5%，即执行买入。
+                </p>
+                <p>
+                    <strong>出售阈值</strong>：当ETF指数下跌，发生大幅回撤，则产生出售信号，出售阈值即低于近期最高点位的比率，如出售阈值为1.05时，表示指数点位低于其近期高点5%，即执行卖出。
+                </p>
+                <p>
+                    <strong>其他参数</strong>：手续费，回测起始日期，回测结束日期。
+                </p>
+            </div>
+        </div>
+        <br/><br/><br/><br/>
+    </div>
+
+</body>
+</html>

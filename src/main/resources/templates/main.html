@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatibale" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>趋势交易ETF回测系统</title>
+    <link  rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.css}"/>
+    <link  rel="stylesheet" th:href="@{/css/style.css}"/>
+    <!--日期选择插件-->
+    <link rel="stylesheet" th:href="@{/css/bootstrap-datepicker/bootstrap-datepicker3.min.css}">
+    <!-- echarts.js -->
+    <script th:src="@{/js/echarts.js}"></script>
+    <!-- axios.js -->
+    <script th:src="@{/js/axios.js}"></script>
+    <!-- vue.js -->
+    <script th:src="@{/js/vue.js}"></script>
+    <!-- jQuery及bootstrap.js -->
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{/js/bootstrap/bootstrap.min.js}"></script>
+    <!--日期选择插件-->
+    <script th:src="@{/js/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/js/bootstrap-datepicker/bootstrap-datepicker.zh-CN.min.js}"></script>
+
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <nav class="navbar navbar-default navbar-inverse" role="navigation">
+                    <div class="navbar-header">
+                         <a class="navbar-brand" href="#">趋势交易ETF回测系统</a>
+                    </div>
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav">
+                            <li  class="active">
+                                 <a href="#">数据回测</a>
+                            </li>
+                            <li>
+                                 <a th:href="@{/trend/help}">帮助文档</a>
+                            </li>
+                        </ul>
+
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                 <a href="#">备注:这是一个demo项目</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                </nav>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-7 column">
+                <div id="main" style="width: 720px;height:410px;"></div>
+            </div>
+            <div class="col-md-5 column">
+                <div class="btn btn-w-md btn-round btn-primary" id="label">回测参数</div>
+                <table class="table table-hover table-bordered" id="param">
+                    <tbody>
+                        <tr>
+                            <td>请选择指数：</td>
+                            <td>
+                                <select @change="changeParamWithFlushDate" v-model="currentCode" class="form-control">
+                                    <option v-for="etf in etfs" :value="etf.code">{{etf.name}}:{{etf.code}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>MA均线:</td>
+                            <td>
+                                <select @change="changeParam" v-model="ma" class="form-control">
+                                    <option value="5">5日</option>
+                                    <option value="10">10日</option>
+                                    <option value="20">20日</option>
+                                    <option value="30">30日</option>
+                                    <option value="60">60日</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>购买阈值:</td>
+                            <td>
+                                <select @change=changeParam v-model="buyThreshold" class="form-control">
+                                    <option v-for="i in 10" :value="i/100">{{(1 + i/100).toFixed(2)}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>出售阈值</td>
+                            <td>
+                                  <select @change=changeParam v-model="sellThreshold" class="form-control">
+                                    <option v-for="i in 10" :value="i/100">{{(1 - i/100).toFixed(2)}}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>手续费</td>
+                            <td>
+                                <select @change=changeParam v-model="serviceCharge" class="form-control">
+                                    <option value="0">无</option>
+                                    <option value="0.001">0.1%</option>
+                                    <option value="0.0015">0.15%</option>
+                                    <option value="0.002">0.2%</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>开始日期</td>
+                            <td>
+                                <input readonly="readOnly" class="form-control js-datepicker m-b-10" 
+                                 data-date-format="yyyy-mm-dd" id="date4Start"/>
+                            </td>
+                            
+                        </tr>
+                        <tr>
+                            <td>结束日期</td></td>
+                            <td>
+                                <input readonly="readOnly" class="form-control js-datepicker m-b-10" 
+                                 data-date-format="yyyy-mm-dd" id="date4End"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+        <hr>
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <div class="btn btn-w-md btn-round btn-success" id="label">收益一览</div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="20%">投资类型</th>
+                            <th width="20%">投资时长 (年)</th>
+                            <th width="20%">1000元投资收益</th>
+                            <th width="20%">总收益率</th>
+                            <th width="20%">年化收益率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td >指数投资</td>
+                            <td >{{getDiffDate()}}</td>
+                            <td >{{(1000 * indexProfitRate).toFixed(2)}}</td>
+                            <td >{{(100 * (indexProfitRate-1)).toFixed(2)}}%</td>
+                            <td >{{((100 * (indexProfitRate-1))/getDiffDate()).toFixed(2)}}%</td>
+                        </tr>
+                        <tr>
+                            <td >趋势投资</td>
+                            <td >{{getDiffDate()}}</td>
+                            <td >{{(1000 * trendProfitRate).toFixed(2)}}</td>
+                            <td >{{(100 * (trendProfitRate-1)).toFixed(2)}}%</td>
+                            <td >{{((100 * (trendProfitRate-1))/getDiffDate()).toFixed(2)}}%</td>
+                        </tr>
+                        <tr>
+                            <td >相对收益</td>
+                            <td >N/A</td>
+                            <td >{{(1000 * (trendProfitRate - indexProfitRate)).toFixed(2)}}</td>
+                            <td >{{(100 * (trendProfitRate - indexProfitRate)).toFixed(2)}}%</td>
+                            <td >{{(100 * (trendProfitRate - indexProfitRate)/getDiffDate()).toFixed(2)}}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn btn-w-md btn-round btn-success" id="label">盈亏统计</div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th colspan="2" style="align-content: center;">
+                                趋势投资盈亏统计
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td width="50%">总共交易次数</td>
+                            <td width="50%">{{winCount + lossCount}}</td>
+                        </tr>
+                        <tr>
+                            <td>盈利交易次数</td>
+                            <td>{{winCount}}</td>
+                        </tr>
+                        <tr>
+                            <td>平均盈利比率</td>
+                            <td>{{(100 * avgWinRate).toFixed(2)}}%</td>
+                        </tr>
+                        <tr>
+                            <td>亏损交易次数</td>
+                            <td>{{lossCount}}</td>
+                        </tr>
+                        <tr>
+                            <td>平均亏损比率</td>
+                            <td>{{(100 * avgLossRate).toFixed(2)}}%</td>
+                        </tr>
+                        <tr>
+                            <td>胜率</td>
+                            <td>{{(100 * winCount / (winCount + lossCount)).toFixed(2)}}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn btn-w-md btn-round btn-success" id="label">收益对比</div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="33%">年份</th>
+                            <th width="33%">指数收益</th>
+                            <th width="33%">趋势投资收益</th>
+                        </tr>
+                    </thead>
+                    <tbody v-for="annualProfit in annualProfits">
+                        <tr>
+                            <td >{{annualProfit.year}}</td>
+                            <td >{{(100 * annualProfit.indexIncome).toFixed(2)}}%</td>
+                            <td >{{(100 * annualProfit.trendIncome).toFixed(2)}}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn btn-w-md btn-round btn-info" id="label">交易明细</div>
+                <div class="list-trade">
+                    <div class="trade-title">交易明细</div>
+                    <div class="trade-body">
+                        <table class="table" id="tradeRecords">
+                            <thead>
+                                <tr>
+                                    <th width="10%">盈/亏</th>
+                                    <th width="15%">购买日期</th>
+                                    <th width="15%">购买盘点</th>
+                                    <th width="15%">出售日期</th>
+                                    <th width="15%">出售盘点</th>
+                                    <th width="10%">盈亏比率</th>
+                                    <th width="20%">1000元投资收益</th>
+                                </tr>
+                            </thead>
+                            <tbody v-for="trade in trades">
+                                <tr>
+                                    <td ><!--v-if判断盈利/亏损-->
+                                      <span class="btn-sm btn-success btn-round" v-if="trade.sellClosePoint > trade.buyClosePoint">盈利</span>
+                                      <span class= "btn-sm btn-danger btn-round" v-if="trade.sellClosePoint < trade.buyClosePoint">亏损</span>
+                                    </td>
+                                    <td >{{trade.buyDate}}</td>
+                                    <td >{{trade.buyClosePoint.toFixed(2)}}</td>
+                                    <td >{{trade.sellDate}}</td>
+                                    <td >{{trade.sellClosePoint.toFixed(2)}}</td>
+                                    <td ><!--v-if判断盈利/亏损-->
+                                      <span class="btn-sm btn-success btn-round" v-if="trade.sellClosePoint > trade.buyClosePoint">
+                                        {{(100 * (trade.sellClosePoint - trade.buyClosePoint)/trade.buyClosePoint).toFixed(2)}}%
+                                      </span>
+                                      <span class="btn-sm btn-danger btn-round" v-if="trade.sellClosePoint < trade.buyClosePoint">
+                                        {{(100 * (trade.sellClosePoint - trade.buyClosePoint)/trade.buyClosePoint).toFixed(2)}}%
+                                      </span>
+                                    </td>
+                                    <td>{{(trade.rate * 1000).toFixed(2)}}</td>
+                                    <td ></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer">---------------股市有风险，投资需谨慎！---------------</div>
+  </div>
+            
+    <script>
+      var vm = new Vue({
+          el: '#app',
+          data: {
+            //绘图参数
+            xData:[],
+            indexData:[],
+            trendData:[],
+            
+            //用于读取数据库中etf编号及名称的参数容器
+            etfs:[],
+            //判断是否需要更新日期参数
+            flushDateFlag:true,
+            //数据回测所需参数
+            currentCode:'000015',
+            ma:'20',
+            buyThreshold:'0.01',
+            sellThreshold:'0.01',
+            serviceCharge:'0.001',
+            startDate:null,
+            endDate:null,
+
+            //回测返还的数据
+            annualProfits:'',
+            winCount:'',
+            lossCount:'',
+            avgWinRate:'',
+            avgLossRate:'',
+            trades:[],
+            dataStartDate:null,
+            dataEndDate:null,
+
+            //页面展示所需数据
+            indexProfitRate:'',
+            trendProfitRate:''
+
+          },
+          mounted() {
+              this.init()
+          },
+          methods: {
+              init(){//页面启动时，查询所有的ETF信息，供页面使用
+                axios.get('codes')
+                .then(response => {
+                    this.etfs = response.data.etfs
+                    this.$nextTick(function(){
+                        vm.getInitData()//调用初始化ETF数据方法
+                    })
+                })
+                .catch(error => {
+                  console.log(error)
+                })
+              },
+              getSimulateData(){
+                if(this.flushDateFlag){
+                    this.flushDate()
+                }
+                let url = 'simulate/' + this.currentCode + '/' + this.ma + '/' +
+                  this.buyThreshold + '/' + this.sellThreshold + '/' +  this.serviceCharge + '/' + this.startDate + '/' + this.endDate
+                console.log(url);
+                axios.get(url)
+                .then(response => {
+                    this.trendData = response.data.simulateData
+                    this.annualProfits = response.data.annualProfits
+                    this.winCount = response.data.winCount
+                    this.lossCount = response.data.lossCount
+                    this.avgWinRate = response.data.avgWinRate
+                    this.avgLossRate = response.data.avgLossRate
+                    this.trades = response.data.trades
+
+                    this.trendProfitRate = this.trades[this.trades.length - 1].rate
+
+                    this.showChart()
+                })
+                .catch(error => {
+                  console.log(error)
+                })
+              },
+              getInitData(){
+                //初始化数据方法，用于页面初始化或更新ETF代码时使用
+                //用于查询所有的ETF数据，不考虑时间
+                axios.get('getAllData/' + this.currentCode)
+                .then(response => {
+                  this.xData = response.data.date
+                  this.indexData = response.data.closePoint
+                  this.dataStartDate = response.data.dataStartDate
+                  this.dataEndDate = response.data.dataEndDate
+
+                  this.indexProfitRate = (this.indexData[this.indexData.length - 1])/this.indexData[0]
+
+                  this.$nextTick(function(){
+                      this.getSimulateData()
+                  })
+                })
+                .catch(error => {
+                  console.log(error)
+                })
+              },
+              getIndexData(){
+                //数据查询方法，用于除ETF代码更新以外的所有查询
+                axios.get('getDataByDate/' + this.currentCode
+                 + '/' + this.startDate + '/' + this.endDate)
+                .then(response => {
+                  this.xData = response.data.date
+                  this.indexData = response.data.closePoint
+
+                  this.indexProfitRate = (this.indexData[this.indexData.length - 1])/this.indexData[0]
+
+                  this.$nextTick(function(){
+                      this.getSimulateData()
+                  })
+                })
+                .catch(error => {
+                  console.log(error)
+                })
+              },
+              flushDate(){
+                //由于js的datepicker无法通过v-model取值,需要通过原生的jQuery及onchange属性
+                //js内的this不是vm,需注意
+                this.startDate = this.dataStartDate;
+                this.endDate = this.dataEndDate;
+                var d1 = this.dataStartDate
+                var d2 = this.dataEndDate
+                
+                //需要先destroy，否则后续新的日期范围如果超出了前面的日期范围，会出冲突
+    			$('#date4Start').datepicker("destroy");
+                $('#date4Start').datepicker({
+                    "format": 'yyyy-mm-dd',
+                    "language": "zh-CN",
+                    autoclose: true,
+                    startDate: d1,
+                    endDate: d2
+                }).on("changeDate",function(e){
+                  var month = (e.date.getMonth() + 1);
+                  if(month < 10){
+                    month = '0' + month;
+                  }
+                  var day = (e.date.getDate());
+                  if(day < 10){
+                    day = '0' + day;
+                  }
+                  vm.startDate = e.date.getFullYear() + "-" + month + "-" + day;
+                  vm.changeParam()
+                });   
+                                
+    			$('#date4End').datepicker("destroy");
+                $('#date4End').datepicker({
+                    "format": 'yyyy-mm-dd',
+                    "language": "zh-CN",
+                    autoclose: true,
+                    startDate: d1,
+                    endDate: d2,
+                }).on("changeDate",function(e){
+                  var month = (e.date.getMonth() + 1);
+                  if(month < 10){
+                    month = '0' + month;
+                  }
+                  var day = (e.date.getDate());
+                  if(day < 10){
+                    day = '0' + day;
+                  }
+                  vm.endDate = e.date.getFullYear() + "-" + month + "-" + day;
+                  vm.changeParam()
+                });     
+                                
+                $('#date4Start').datepicker('update', d1);
+                $('#date4End').datepicker('update', d2);		                           	
+              },
+              changeParam(){
+                this.flushDateFlag = false
+                this.getIndexData()
+              },
+              changeParamWithFlushDate(){
+                this.flushDateFlag = true
+                this.getInitData()
+              },
+              showChart(){
+                  //以下为echart的图表生成代码
+                  var chartDom = document.getElementById('main');
+                  var myChart = echarts.init(chartDom);
+                  var option;
+
+                  option = {
+                      title: {
+                          text:'趋势交易/指数收益分析图'
+                      },
+                      tooltip: {
+                          trigger: 'axis',
+                          axisPointer: {
+                              animation: false,
+                              type: 'cross',
+                              lineStyle: {
+                                  color: '#376df4',
+                                  width: 2,
+                                  opacity: 1
+                              }
+                          }
+                      },
+                      legend: {
+                          //图例
+                          data:[this.currentCode,'趋势交易']
+                      },
+                      xAxis: {
+                          type: 'category',
+                          data: this.xData
+                      },
+                      yAxis: {
+                          type: 'value'
+                      },
+                      dataZoom: [{
+                          textStyle: {
+                              color: '#8392A5'
+                          },
+                          handleIcon:
+                              'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                          dataBackground: {
+                              areaStyle: {
+                                  color: '#8392A5'
+                              },
+                              lineStyle: {
+                                  opacity: 0.8,
+                                  color: '#8392A5'
+                              }
+                          },
+                          brushSelect: true
+                      },
+                          {
+                          type: 'inside'
+                          }
+                      ],
+                      series: [
+                          {   
+                              name:this.currentCode,
+                              symbol: 'none',//设置无圆点
+                              data: this.indexData,
+                              type: 'line',
+                              lineStyle:{
+                                  width:1.5
+                              }
+                          },
+                          {   
+                              name:'趋势交易',
+                              symbol: 'none',//设置无圆点
+                              data: this.trendData,
+                              type: 'line',
+                              lineStyle:{
+                                  width:1.5
+                              },
+                              color:'red'
+                          }
+                      ]
+                  };
+
+                  option && myChart.setOption(option);
+              },
+              //获取年份的简单方法
+              getDiffDate(){
+                var diff = ((new Date(this.endDate)-new Date(this.startDate))/365/24/60/60/1000).toFixed(2)
+                return diff
+              },
+          },
+      })
+  </script>
+</body>
+</html>
