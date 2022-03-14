@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @TableName("etfdata")//指定表名
 public class ETFData {
-    private long id;
+    private Long id;
     @TableId("datacode")//指定表中字段名
     private String dataCode;
     private String date;

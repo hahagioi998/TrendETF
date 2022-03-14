@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @TableName("etfcodes")//指定表名
 public class ETF {
-    private long id;
+    private Long id;
     private String code;
     private String name;
 }
