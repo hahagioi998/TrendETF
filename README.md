@@ -38,7 +38,7 @@ SpringBoot&amp;MyBatisPlus练手项目：ETF趋势交易系统
   );
   ```
 
-- 通过navicat将ETF的原始json数据导入，由于Navicat的导入无法直接将ETF的代码直接输入，每次导入一个json数据需执行以下sql语句，将ETF的代码手动添加。（ps：导入流程可参考https://www.cnblogs.com/shenhaha520/p/11031817.html博客的步骤）
+- 通过navicat将ETF的原始json数据导入，由于Navicat的导入无法直接将ETF的代码直接输入，每次导入一个json数据需执行以下sql语句，将ETF的代码手动添加。（ps：导入流程可参考https://www.cnblogs.com/shenhaha520/p/11031817.html 博客的步骤）
 
   ```mysql
   # 以添加000015.json文件为例，添加后执行下面语句，赋值datacode,余同
@@ -48,7 +48,7 @@ SpringBoot&amp;MyBatisPlus练手项目：ETF趋势交易系统
 
 - 修改application.properties中的数据库配置信息，更改为自身的数据库配置。
 
-- 启动TrendETFApplication.java，打开浏览器，输入http://localhost:8088/trend/（最后的'/'不能省略）即可进入项目首页。运行成功界面如下：
+- 启动TrendETFApplication.java，打开浏览器，输入http://localhost:8088/trend/ （最后的'/'不能省略）即可进入项目首页。运行成功界面如下：
 
 <img src="https://myimageserver.oss-cn-beijing.aliyuncs.com/TrendShow.png" style="zoom:80%;" />
 
